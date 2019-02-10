@@ -2,13 +2,13 @@
 Final project for course: DESIGN PATTERNS FOR BLOCKCHAIN CRN-52719-201802
 
 Intro: 
-This project contains one contract; SupplierAssgin. It is a part of suppluy chain management system based on de-centralized
-hyperledger concept. This contract basically assign the status of “ accepted” or “true” and “rejected” or “false” to a supplier. 
+This project contains one contract: SupplierAssgin. It is a part of supply chain management system based on de-centralized hyperledger concept. This contract basically assign the status
+ of “ accepted” or “true” and  “rejected” or “false” to a supplier. 
 Any supplier has a unique account. All mapped to statuses mentioned above.
-There is onlyOwner modifier to limit transferring ownership. This is a base to do test based on "Owner Pattern'.
-Also, accounts are mapped to another boolean value, to authorized account for a further role(to be determined). This will be used to test
-"Whitelisted" pattern.
-Tests 
+There is onlyOwner modifier to limit transferring ownership. This is a base to do tests on "Owner Pattern".
+Also, accounts are mapped to another boolean value," whitelisted",to authorized accounts for
+ a further role(to be determined). This will be used to test "Whitelisted" pattern.
+Tests: 
 Patterns of “Ownership” and “Whitelisted” are uesd to test this code: 
  Ownership tests
       ✓ Should have owner address be same address who deployed contract
@@ -31,8 +31,7 @@ Patterns of “Ownership” and “Whitelisted” are uesd to test this code:
 
   15 passing (1s)
   
-Before running tests you need to have the ethereum node running. Due to some problems' I could not use a docker container, so I
-use Ganache-cli. Coverage is also disabled.
+Before running tests you need to have the ethereum node running. Due to some problems' I could not use a docker container, so I used Ganache-cli. Coverage is also disabled.
 
 Now we’re ready to run the tests: 
 ```bash truffle test 
