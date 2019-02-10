@@ -10,8 +10,9 @@ let supplierAssignInstance;
 contract("SupplierAssign", accounts => {
   
   beforeEach(async function() {
-    supplierAssignInstance = await SupplierAssign.new();
     
+    supplierAssignInstance = await SupplierAssign.new();
+    this.timeout(5000);
   });  
 
   after("write coverage/profiler output", async () => {
@@ -26,13 +27,13 @@ contract("SupplierAssign", accounts => {
   });
   
 
-  describe('ownership tests' , function(){
+  describe('Ownership tests' , function(){
   
 
     it("Should have owner address be same address who deployed contract", async () => {
       const owner = accounts[0];
 
-     assert.equal(
+      assert.equal(
        (await supplierAssignInstance.owner()),
         owner
       );
@@ -46,10 +47,11 @@ contract("SupplierAssign", accounts => {
       assert.equal(
         (await supplierAssignInstance.owner()),
         currentOwner,
-        "Initial owner is not address expected."
+        "did not fail"
       );
 
-      await shouldFail.reverting(supplierAssignInstance.assign(anotherAccount, booleanValue, { from: anotherAccount }));
+      await shouldFail.reverting(supplierAssignInstance.assign(anotherAccount, booleanValue, 
+        { from: anotherAccount }));
     });
 
     it("Should allow owner to change status", async function() {
@@ -57,18 +59,18 @@ contract("SupplierAssign", accounts => {
        const anotherAccount = accounts[1];
        const booleanValue = true;
 
-       assert.equal(
-        (await supplierAssignInstance.owner()),
-       currentOwner,
+      assert.equal(
+      (await supplierAssignInstance.owner()),
+        currentOwner,
         "Initial owner is not address expected."
       );
 
       await supplierAssignInstance.assign(anotherAccount, true);
 
       assert.equal(
-      (await supplierAssignInstance.supplierStatus.call(anotherAccount)),
-      booleanValue,
-      "Updated supplier's status is not `true'"
+        (await supplierAssignInstance.supplierStatus.call(anotherAccount)),
+        booleanValue,
+        "status was not changed"
       );
 
     });
@@ -77,7 +79,9 @@ contract("SupplierAssign", accounts => {
       const aSupplier = accounts[1];
       const booleanValue = true;
       const { logs } = await supplierAssignInstance.assign(aSupplier, booleanValue);
-      await expectEvent.inLogs(logs, 'StatusAssigned', {_supplier: aSupplier,  _newStatus: booleanValue});
+      await expectEvent.inLogs(logs, 'StatusAssigned', {_supplier: aSupplier, 
+         _newStatus: booleanValue
+      });
 
     });
 
@@ -89,6 +93,7 @@ contract("SupplierAssign", accounts => {
         currentOwner,
         "Initial owner is not address expected."
       );
+
       await supplierAssignInstance.transferOwnership(futureOwner);
       assert.equal(
         (await supplierAssignInstance.owner()),
@@ -97,46 +102,27 @@ contract("SupplierAssign", accounts => {
     });
 
     it("Should fail if transferring ownership to address zero", async function() {
-      const currentOwner = accounts[0];
-             
-      // console.log(`current owner  ${currentOwner}`);
-      // console.log(`from contractOwner owner  ${(await supplierAssignInstance.owner())}`);
-
-
-      assert.equal(
-         (await supplierAssignInstance.owner()),
-         currentOwner,
-         "Initial owner is not address expected."
+      const currentOwner = accounts[0];      
+      
+      assert.equal((await supplierAssignInstance.owner()),currentOwner,
+        "Initial owner is not address expected."
       );
   
-        await shouldFail(supplierAssignInstance.transferOwnership(ZERO_ADDRESS, { from: currentOwner }));
+      await shouldFail(supplierAssignInstance.transferOwnership(ZERO_ADDRESS, 
+        { from: currentOwner }));
       });
 
-    
-    
-
     it("Should emit an event once ownership transfered", async function() {
-     
       const owner = accounts[0];
       const newOwner1 = accounts[2];
-      // assert.equal(
-      //   (await supplierAssignInstance.owner()),
-      //    owner
-      //  );
-      
       const { logs } = await supplierAssignInstance.transferOwnership(newOwner1, {from: owner});
       await expectEvent.inLogs(logs, 'OwnershipTransferred', {newOwner : newOwner1});
-      
     });
-  
-  
   });
-
 
   describe('whitelisted tests', function(){
 
     it('should return true when checking if an account is whitelisted ' , async function(){
-      
       const anAccount = accounts[2];
       const booleanValue = true;
            
@@ -145,12 +131,12 @@ contract("SupplierAssign", accounts => {
       assert.equal(
         (await supplierAssignInstance.isWhitelisted(anAccount)),
         booleanValue,
-        "Updated whitelisted status is not `true'");
+        "returned 'false'"
+      );
 
-    })
+    });
 
     it('should revert if an account is ZERO_ADDRESS ' , async function(){
-      
       const anAccount = accounts[2];
       await supplierAssignInstance.addWhitelisted(anAccount);
             
@@ -160,16 +146,15 @@ contract("SupplierAssign", accounts => {
 
     it('should return false if an account is NOT whitelisted' , async function(){
       const anAccount1 = accounts[1];
-      //const anAccount = await supplierAssignInstance.whitelisted.call(anAccount1);
+  
       await supplierAssignInstance.removeWhitelisted(anAccount1);
-      assert.equal(
-        (await supplierAssignInstance.isWhitelisted(anAccount1)),
-        false,
-        "Updated whitelisted status is not `false'");
+
+      assert.equal((await supplierAssignInstance.isWhitelisted(anAccount1)),false,
+        "returned 'true'"
+      );
 
     });
     
-
     it('should allow whitelisting an account' , async function(){
       const party = accounts[1];
       const booleanValue = true;
@@ -179,8 +164,8 @@ contract("SupplierAssign", accounts => {
       assert.equal(
         (await supplierAssignInstance.whitelisted.call(party)),
         booleanValue,
-        "Updated whitelisted status is not `false'");
-
+        "whitelisting acount was not allowed"
+      );
 
     });
 
@@ -188,12 +173,11 @@ contract("SupplierAssign", accounts => {
       const aSupplier = accounts[1];
       const booleanValue = true;
       const { logs } = await supplierAssignInstance.addWhitelisted(aSupplier);
-      await expectEvent.inLogs(logs, 'WhitelistedAdded', {account: aSupplier});
 
+      await expectEvent.inLogs(logs, 'WhitelistedAdded', {account: aSupplier});
 
     });
 
-    
     it('should allow removing an account from whitelist' , async function(){
       const anAccount = accounts[1];
       const booleanValue = false;
@@ -201,11 +185,9 @@ contract("SupplierAssign", accounts => {
       await supplierAssignInstance.removeWhitelisted(anAccount);
 
       assert.equal(
-        (await supplierAssignInstance.whitelisted.call(anAccount)),
-        booleanValue,
-        "Updated whitelisted status is not `false'");
-
-
+        (await supplierAssignInstance.whitelisted.call(anAccount)),booleanValue,
+        "removing account was not allowed'"
+      );
     });
 
     it('should emit an event when an account removed from whitelist' , async function(){
@@ -213,8 +195,6 @@ contract("SupplierAssign", accounts => {
       await supplierAssignInstance.addWhitelisted(aSupplier);
       const { logs } = await supplierAssignInstance.removeWhitelisted(aSupplier);
       await expectEvent.inLogs(logs, 'WhitelistedRemoved', {account: aSupplier});
-
-
     });
 
     it("Should fail if passing wrong value type", async function() {
@@ -222,36 +202,12 @@ contract("SupplierAssign", accounts => {
       const participant = "supplier";
                 
       assert.equal(
-        (await supplierAssignInstance.owner()),
-        currentOwner,
-        "Initial owner is not address expected."
+        (await supplierAssignInstance.owner()),currentOwner,"Initial owner is not address expected."
       );
 
-      await should.not.equal(supplierAssignInstance.addWhitelisted(participant, { from: currentOwner }));
+      await should.not.equal(supplierAssignInstance.addWhitelisted(participant, 
+        { from: currentOwner }));
     });
-
-    it('should throw if an unemitted event requested' , async function(){
-      const aSupplier = accounts[1];
-      await supplierAssignInstance.addWhitelisted(aSupplier);
-      const { logs } = await supplierAssignInstance.removeWhitelisted(aSupplier);
-      shouldFail (() => expectEvent.inLogs(logs, 'WhiteligstedAdded'));
-    });
-
-    it('should return true when  an account was removed from white list' , async function(){
-      const supplier = accounts[1];
-      const booleanValue = true;
-      await supplierAssignInstance.addWhitelisted(supplier);
-      const isRemoved = await supplierAssignInstance.removeWhitelisted(supplier);
-
-      should.equal(
-        (await isRemoved, booleanValue,
-        "Updated whitelisted status is not `true'")
-      );
-
-    });
-
-    
-    
 
   });
 
